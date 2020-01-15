@@ -17,10 +17,13 @@ document.addEventListener('keyup', keyLog);
 function init(i) { // init properly resets numOfLetters and numOfGuesses value
     numOfLetters = heroes[i].length;
     numOfGuesses = 5;
-    console.log(numOfLetters);
 } 
 
-function gameOver() {
+function gameOver(hasLost) {
+    if(hasLost) {
+        var heroImg = document.getElementById(heroes[currentHero -1]);
+        heroImg.style = "display: none;";
+    }
     wordDisplay.textContent = "";
     guessDisplay.textContent = "";
     lettersGuessed = [];
@@ -28,11 +31,14 @@ function gameOver() {
     guessedNum = 0;
     numOfGuesses = 5;
     guessNumDisplay.textContent = numOfGuesses
+    
 }
 
 function guessLetter(letter) {
+    if(lettersGuessed.includes(letter)) {
+        return false;
+    }
     lettersGuessed.push(letter); // collects guessed letters
-    //console.log(lettersGuessed);
     var occurance = 0;
     for(j = 0; j < numOfLetters; j++){
         if(heroes[currentHero].charAt(j) === letter) { // if hero string contains letter
@@ -49,7 +55,7 @@ function guessLetter(letter) {
 
         if(numOfGuesses < 1) {
             alert("Game Over! You're out of guesses!");
-            gameOver();
+            gameOver(true);
         } else { // lose a guess
             numOfGuesses -= 1;
             guessNumDisplay.textContent = numOfGuesses;
@@ -58,10 +64,14 @@ function guessLetter(letter) {
     guessedNum += occurance;
     if(guessedNum === numOfLetters) { // if all letters have been guessed
         setTimeout(function() {
+            if(currentHero > 0) {
+                var prevImg = document.getElementById(heroes[currentHero - 1]);
+                prevImg.style = "display: none;";
+            }
+            var heroImg = document.getElementById(heroes[currentHero]);
+            heroImg.style = "display: block;";
             alert("You guessed " + heroes[currentHero] + " correctly!");
-            console.log('hero' + currentHero);
-            console.log(heroes.length);
-            gameOver(); 
+            gameOver(false); 
             if(currentHero < heroes.length - 1) { 
                 currentHero += 1;
                 init(currentHero); // continue to next hero
@@ -76,11 +86,20 @@ function guessLetter(letter) {
 function keyLog(e) {
     if (e.which <= 90 && e.which >= 65){
         function setGame() { // sets game for new hero
+            document.getElementById(heroes[heroes.length - 1]).style = "display: none";
+            init(currentHero);
             for(i = 1; i <= numOfLetters; i++) {
                 var emptySpace = document.createElement("div");
-                emptySpace.className = "letter";
-                emptySpace.id = i - 1;
+                var para = document.createElement("p");
+
+                emptySpace.className = "letterContainer";
+
+                // fix letter spacing issue here
+                // create div with letterContainer class; append paragraph
+
+                para.id = i - 1;
                 wordDisplay.appendChild(emptySpace);
+                emptySpace.appendChild(para)
                 guessNumDisplay.textContent = numOfGuesses;
             }
             guessLetter(e.key);
@@ -88,7 +107,6 @@ function keyLog(e) {
         
         if(gameStarted) {
                 guessLetter(e.key);
-            }
         }
         else {
             gameStarted = true;
